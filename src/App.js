@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import "./App.css";
 import Die from "./components/Die";
 import { nanoid } from "nanoid";
+import Confetti from "react-confetti";
 
 function App() {
   const allNewDice = () => {
@@ -17,17 +18,31 @@ function App() {
   };
 
   const [dice, setDice] = useState(allNewDice());
+  const [tenzies, setTenzies] = useState(false);
+
+  useEffect(() => {
+    const everyIsHeld = dice.every((die) => die.isHeld);
+    const everyIsSame = dice.every((die) => die.number === dice[0].number);
+    if (everyIsHeld && everyIsSame) {
+      setTenzies(true);
+    }
+  }, [dice]);
 
   const rollDice = () => {
-    const filteredDice = dice.map((die) => {
-      if (die.isHeld) {
-        return { ...die };
-      } else {
-        return { ...die, number: Math.trunc(Math.random() * 6 + 1) };
-      }
-    });
+    if (tenzies) {
+      setTenzies(false);
+      setDice(allNewDice());
+    } else {
+      const filteredDice = dice.map((die) => {
+        if (die.isHeld) {
+          return { ...die };
+        } else {
+          return { ...die, number: Math.trunc(Math.random() * 6 + 1) };
+        }
+      });
 
-    setDice(filteredDice);
+      setDice(filteredDice);
+    }
   };
 
   const activate = (id) => {
@@ -61,8 +76,9 @@ function App() {
           ))}
         </div>
         <button className="btn" onClick={rollDice}>
-          Roll
+          {tenzies ? "Reset" : "Roll"}
         </button>
+        {tenzies && <Confetti />}
       </main>
     </>
   );
